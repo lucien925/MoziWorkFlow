@@ -1,0 +1,26 @@
+{
+  "name": "mozi-client",
+  "version": "1.0.0",
+  "description": "the client for Mozi",
+  "main": "main.js",
+  "scripts": {
+    "test": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/summerGreenTea/MoziWorkFlow.git"
+  },
+  "keywords": [
+    "Electron",
+    "mozi"
+  ],
+  "author": "lucienyu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/summerGreenTea/MoziWorkFlow/issues"
+  },
+  "homepage": "https://github.com/summerGreenTea/MoziWorkFlow#readme",
+  "devDependencies": {
+    "electron": "^0.4.1"
+  }
+}
