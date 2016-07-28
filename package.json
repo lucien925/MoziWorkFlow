@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/summerGreenTea/MoziWorkFlow#readme",
   "devDependencies": {
-    "electron": "^0.4.1"
+    "electron": "^0.4.1",
+    "moz": "0.0.8"
   }
 }
