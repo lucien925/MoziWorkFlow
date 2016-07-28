@@ -11,49 +11,83 @@
             <div class="slider">
                 <div class="slider-header">
                     <h3 class="slider-header-title">PROJECT</h3>
-                    <span class="slider-header-plus">+</span>
+                    <span id="J-add-folder" class="slider-header-plus">+</span>
                 </div>
-                <ul class="slider-list">
-                    <li class="slider-list-item">
-                        <a href="javascript:void(0);">
-                            <div class="project-avatar">
-                                <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                                     viewBox="0 0 58 58" style="enable-background:new 0 0 58 58;" xml:space="preserve">
+                <ul id="J-slider-list" class="slider-list">
+                    <li data-target-project="{projectPath}" class="slider-list-item">
+                        <div class="project-desc">
+                            <div class="project-desc-name">Dcloud设计云</div>
+                            <div class="project-desc-path">/user/Dcloud/src/index</div>
+                        </div>
+                        <div class="project-avatar">
+                            <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                 viewBox="0 0 58 58" style="width:.3rem;height:" xml:space="preserve" >
                                 <path style="fill:#EFCE4A;" d="M46.324,52.5H1.565c-1.03,0-1.779-0.978-1.51-1.973l10.166-27.871
                                     c0.184-0.682,0.803-1.156,1.51-1.156H56.49c1.03,0,1.51,0.984,1.51,1.973L47.834,51.344C47.65,52.026,47.031,52.5,46.324,52.5z"/>
                                 <g>
                                     <path style="fill:#EBBA16;" d="M50.268,12.5H25l-5-7H1.732C0.776,5.5,0,6.275,0,7.232V49.96c0.069,0.002,0.138,0.006,0.205,0.01
                                         l10.015-27.314c0.184-0.683,0.803-1.156,1.51-1.156H52v-7.268C52,13.275,51.224,12.5,50.268,12.5z"/>
                                 </g>
-                                </svg>
+                            </svg>
+                        </div>                          
+                        <div class="project-actions">
+                            <span class="project-actions-icon"></span>
+                            <div class="project-actions-wrap">
+                              <ul class="project-actions-list">
+                                  <li class="project-actions-item init"><a href="javascript:void(0)">Init</a></li>
+                                  <li class="project-actions-item serve"><a href="javascript:void(0)">Serve</a></li>
+                                  <li class="project-actions-item build"><a href="javascript:void(0)">Build</a></li>
+                                  <li class="project-actions-item deploy"><a href="javascript:void(0)">Deploy</a></li>
+                                  <li class="project-actions-item pack"><a href="javascript:void(0)">Package</a></li>
+                              </ul>
+                                
                             </div>
-                            <div class="project-desc">
-                                <div class="project-desc-name">Dcloud设计云</div>
-                                <div class="project-desc-path">/user/Dcloud/src/index</div>
-                            </div>
-                            <div class="project-actions">
-                                <ul class="project-actions-list">
-                                    <li class="project-actions-list">∨</li>
-                                </ul>
-                            </div>
-                        </a>
+                        </div>
                     </li>
-                    <li class="slider-list-item"><a href="javascript:void(0);">Tencent</a></li>
-                    <li class="slider-list-item"><a href="javascript:void(0);">Tencent</a></li>
-                    <li class="slider-list-item"><a href="javascript:void(0);">Tencent</a></li>
-                    <li class="slider-list-item"><a href="javascript:void(0);">Tencent</a></li>
                 </ul>
                 <ul class="slider-actions">
-                    <li class="slider-actions-item init"><a href="javascript:void(0);">Init</a></li>
-                    <li class="slider-actions-item serve"><a href="javascript:void(0);">Serve</a></li>
-                    <li class="slider-actions-item build"><a href="javascript:void(0);">build</a></li>
-                    <li class="slider-actions-item deploy" ><a href="javascript:void(0);">deploy</a></li>
-                    <li class="slider-actions-item pack"><a href="javascript:void(0);">package</a></li>
+                    <li class="slider-actions-item init"><a data-action="init" href="javascript:void(0);">Init</a></li>
+                    <li class="slider-actions-item serve"><a data-action="serve" href="javascript:void(0);">Serve</a></li>
+                    <li class="slider-actions-item build"><a data-action="build" href="javascript:void(0);">build</a></li>
+                    <li class="slider-actions-item deploy" ><a data-action="deploy" href="javascript:void(0);">deploy</a></li>
+                    <li class="slider-actions-item pack"><a data-action="pack" href="javascript:void(0);">package</a></li>
 
                 </ul>
             </div>
             
         </div>
+        <script id="project-tmpl" type="text/tmpl">
+            <li data-target-project="{projectPath}" class="slider-list-item">
+                <div class="project-desc">
+                    <div class="project-desc-name">{projectName}</div>
+                    <div class="project-desc-path">{projectPath}</div>
+                </div>
+                <div class="project-avatar">
+                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                         viewBox="0 0 58 58" style="width:.3rem;height:" xml:space="preserve" >
+                        <path style="fill:#EFCE4A;" d="M46.324,52.5H1.565c-1.03,0-1.779-0.978-1.51-1.973l10.166-27.871
+                            c0.184-0.682,0.803-1.156,1.51-1.156H56.49c1.03,0,1.51,0.984,1.51,1.973L47.834,51.344C47.65,52.026,47.031,52.5,46.324,52.5z"/>
+                        <g>
+                            <path style="fill:#EBBA16;" d="M50.268,12.5H25l-5-7H1.732C0.776,5.5,0,6.275,0,7.232V49.96c0.069,0.002,0.138,0.006,0.205,0.01
+                                l10.015-27.314c0.184-0.683,0.803-1.156,1.51-1.156H52v-7.268C52,13.275,51.224,12.5,50.268,12.5z"/>
+                        </g>
+                    </svg>
+                </div>                          
+                <div class="project-actions">
+                    <span class="project-actions-icon"></span>
+                    <div class="project-actions-wrap">
+                      <ul class="project-actions-list">
+                          <li class="project-actions-item init"><a href="javascript:void(0)">Init</a></li>
+                          <li class="project-actions-item serve"><a href="javascript:void(0)">Serve</a></li>
+                          <li class="project-actions-item build"><a href="javascript:void(0)">Build</a></li>
+                          <li class="project-actions-item deploy"><a href="javascript:void(0)">Deploy</a></li>
+                          <li class="project-actions-item pack"><a href="javascript:void(0)">Package</a></li>
+                      </ul>
+                        
+                    </div>
+                </div>
+            </li>
+        </script>
         <script src="../js/index.js"></script>
     </body>
 </html>

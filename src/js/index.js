@@ -1,55 +1,87 @@
 ;(function() {
 	'use strict'
 	const electron = require('electron')
+	const path = require('path')
 	const remote = electron.remote
 	const { ipcRenderer } = electron
 	const { dialog } = remote
 
 	// element query
-	let addFolder = $('.slider-header-plus'),
-		init     = $('.init'),
-		serve     = $('.serve'),
-		build     = $('.build'),
-		deploy    = $('.deploy'),
-		pack   = $('.pack')
+	let JAddFolder  = $('#J-add-folder'),
+		JSliderList = $('#J-slider-list'),
+		init        = $('.init'),
+		serve       = $('.serve'),
+		build       = $('.build'),
+		deploy      = $('.deploy'),
+		pack        = $('.pack')
 
-	let workspace = ''
+	// html template
+	let projectTmpl = $('#project-tmpl')
 
-	addFolder.onclick = () => {
+	//global variables
+	let workspace = null,
+		current = ''
+	;(() => {
+		workspace = localStorage.getItem('workspace')
+		if(!workspace) { 
+			workspace = []
+		} else {
+			workspace = JSON.parse(workspace)
+			current = workspace[0].path
+			generateProjectItem(workspace)
+		}
+	})()
+
+	function generateProjectItem(value) {
+		if(typeof value === 'object') {
+			let len = value.length,
+				i = -1
+			while(++i < len) {
+				toDom(value[i])
+			}
+		}
+		// transform html string to html dom structure
+		function toDom(data) {
+			let tmpl = projectTmpl.innerHTML,
+				html = ''
+			html = tmpl.replace(/\{projectName\}/g, data.name)
+					   .replace(/\{projectPath\}/g, data.path)
+			const parser = new DOMParser(),
+				  context = parser.parseFromString(html, 'text/html'),
+				  targetEle = $('.slider-list-item', context)
+
+			JSliderList.insertBefore(targetEle, JSliderList.firstChild)
+		}
+	}
+
+	// add project to container
+	JAddFolder.onclick = () => {
 		dialog.showOpenDialog({
-			properties: ['openDirectory', 'multiSelections']
+			properties: ['openDirectory']
 		}, (opts) => {
 			if(!opts) return
-			workspace = opts[0]
-			localStorage.setItem('workspace', workspace)
-			opts.forEach(() => {
-				// generate the selected folders
-			})
+			current = opts[0]
+			let a = current.split(path.sep),
+			    o = {
+					  name: a[a.length - 1],
+					  path: current
+				  }
+			workspace.unshift(o)
+			localStorage.setItem('workspace', JSON.stringify(workspace))
+			generateProjectItem(workspace)
 		})
 	}
+	JSliderList.onclick = (e) => {
+		e.preventDefault()
+		e.stopPropagation()
+		let target = e.target,
+			action = target.dataset.action
+		if(!action) return
 
-	// deal tasks
-	init.onclick = () => {
-		ipcRenderer.send('init', workspace)
+		ipcRenderer.send(action, current)
 	}
 
-	build.onclick = () => {
-		ipcRenderer.send('build', workspace)
-	}
-
-	serve.onclick = () => {
-		ipcRenderer.send('serve', workspace)
-	}
-
-	deploy.onlick = () => {
-		ipcRenderer.send('deploy', workspace)
-	}
-
-	pack.onclick = () => {
-		ipcRenderer.send('pack', workspace)
-	}
-
-
+	// util functions
 	function $(selector , ctx) {
 		if(!ctx) ctx = document
 		return ctx.querySelector(selector)
