@@ -121,14 +121,14 @@ app.on('ready', () => {
 
         child.stdout.on('finish', () => {
             // show the end of the displayed message
-            event.sender.send('end')
+            event.sender.send('end', action, context)
             // kill child process
             process.kill(child.pid) 
         })
     })
 
     ipcMain.on('stop', (event, pid) => {
-        
+
     })
 })
 

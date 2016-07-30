@@ -1,4 +1,4 @@
-;(function() {
+
 	'use strict'
 	const electron = require('electron')
 	const path = require('path')
@@ -70,7 +70,14 @@
 				_a = _context.split(path.sep),
 			    _o = {
 					  name: _a[_a.length - 1],
-					  path: _context
+					  path: _context,
+					  actions: {
+					  	init: false,
+					  	serve: false,
+					  	build: false,
+					  	deploy: false,
+					  	package: false
+					  }
 				}
 			
 			workspace.push(_o)
@@ -81,7 +88,7 @@
 	JMoziList.onclick = (e) => {
 		e.preventDefault()
 		e.stopPropagation()
-		let _this = this,
+		let _this = JMoziList,
 			_target = e.target,
 			_action = _target.dataset.action,
 			_targetParent = walker(_target),
@@ -92,7 +99,9 @@
 			switch(_action) {
 				case 'remove':
 				case 'del':
-					let __workspaceStringify = null
+					let __workspaceStringify = null,
+						__len = workspace.length,
+						__index = -1
 					// if(_action === 'del') {
 					// 	let buttons = ['Yes', 'No'],
 					// 		currentWin = remote.getCurrentWindow(),
@@ -113,19 +122,20 @@
 					// 		})
 					// 	}
 					// }
-
-					workspace.every((item, index) => {
-						if(item.path === _path) {
-							workspace.splice(index, 1)
-							return false;
+					while(++__index < __len) {
+						if(workspace[__index]['path'] === _path) {
+							workspace.splice(__index, 1)
+							break
 						}
-					})
+					}
+					
 					JMoziList.removeChild(_targetParent)
 					if(workspace.length > 0) {
 						__workspaceStringify = JSON.stringify(workspace)
 						localStorage.setItem('workspace', __workspaceStringify)
 					} else {
 						localStorage.removeItem('workspace')
+						context = ''
 					}
 		
 				case 'info':
@@ -134,7 +144,7 @@
 			}
 			return
 		} else {
-			$$('.mozi-list-item', this).forEach((item, index) => {
+			$$('.mozi-list-item', _this).forEach((item, index) => {
 				item.classList.remove('current')
 			})
 
@@ -148,20 +158,50 @@
 
 			let _this = this,
 				_context = context,
-				_action = this.dataset.action
-			if(_action === 'init') {
-				let __path = path.join(_context, 'app', ''),
-					__isExists = fs.existsSync(path.join(_context, 'app', 'moz.config.js'))
-				dialog.showErrorBox('Error:', '当前目录已经被初始化了')
-				return false
-			}
+				_action = this.dataset.action,
+				_contextInWorkspace = contextInWorkspace(_context)
+			if(!_contextInWorkspace) return
 			// judge the action can be deal with
+			let _configFilePath = path.join(_context, 'moz.config.js'),
+				_isExistsConfigFile = fs.existsSync(_configFilePath)
+			if(_action === 'init') {
+				if(_isExistsConfigFile) {
+					dialog.showErrorBox('Error:', '当前目录已经被初始化了')
+					return false
+				}
+			} else {
+				// if the `moz.config.js` file is not exists,
+				// show the error message
+				if(!_isExistsConfigFile) {
+					dialog.showErrorBox('Error:', '请先初始化当前目录')
+					return false
+				}
+				// if one of actions are processing，
+				// show the error message
+				let _actions = _contextInWorkspace.actions,
+					_key = ''
+
+				for(_key in _action) {
+					if(_key === _action)
+						break
+					if(_action[_key]) {
+						dialog.showErrorBox('Error:', '当前项目的已有正在进行中的任务')
+						return false
+					}
+				}
+				
+			}
+			_contextInWorkspace[_action] = true
 			ipcRenderer.send('action', _action, _context)
 		}
 	})
 
 
-	ipcRenderer.on('end', (event) => {
+	ipcRenderer.on('end', (event, action, context) => {
+		let _contextInWorkspace = contextInWorkspace(context),
+			_actions = _contextInWorkspace.actions
+		_actions[action] = false
+
 		$('.mask').style.display = 'block'
 		$('.mask > .success').style.display = 'block'
 	})
@@ -210,4 +250,13 @@
 		}
 	}
 
-})();
+	function contextInWorkspace(ctx) {
+		if(!ctx) return false
+		let _len = workspace.length,
+			_index = -1
+		while(++_index < _len) {
+			if(workspace[_index]['path'] === ctx) {
+				return workspace[_index]
+			}
+		}
+	}
