@@ -52,7 +52,26 @@ function appServe() {
 
 function appBuild() {
     ipcMain.on('build', (event, arg) => {
-        mozTask('build', arg)
+        //mozTask('build', arg)
+        let _cwd = arg
+        const childForBuild = cp.exec('moz build', {
+            cwd: _cwd
+        })
+
+        childForBuild.stderr.on('data', (err) => {
+            let _errToString = data.toString()
+            console.error(_errToString)
+        })
+
+        childForBuild.stdout.on('data', (data) => {
+            console.log(data.toString())
+        })
+        childForBuild.stdout.on('finish', () => {
+            // show the end of the displayed message
+            // kill child process
+
+        })
+
     })
 }
 
@@ -64,19 +83,53 @@ function appDeploy() {
 
 function appPackage() {
     ipcMain.on('pack', (event, arg) => {
-        mozTask('pack', arg)
+        //mozTask('pack', arg)
+        const childForPack = cp.exec('moz pack', {
+            cwd
+        })
     })
 }
 
 app.on('ready', () => {
     createWindow()
-    appInit()     // app init
-    appPackage()  // app package
-    appDeploy()   // app deploy
-    appBuild()    // app build
-    appServe()    // app serve
+    //appInit()     // app init
+    //appPackage()  // app package
+    //appDeploy()   // app deploy
+    //appBuild()    // app build
+    //appServe()    // app serve
+
+    ipcMain.on('action', (event, action, context) => {
+        if(action === 'init') {
+            // input project name
+        }
+        console.log(action, context)
+        const child = cp.exec(`moz ${action}`, {
+            cwd: context
+        })
 
 
+        child.stderr.on('data', (err) => {
+            let _err = err.toString()
+            // handle the error
+            event.sender.send('error', err)
+            console.log(_err)
+        })
+
+        child.stdout.on('data', (data) => {
+            console.log(data.toString())
+        })
+
+        child.stdout.on('finish', () => {
+            // show the end of the displayed message
+            event.sender.send('end')
+            // kill child process
+            process.kill(child.pid) 
+        })
+    })
+
+    ipcMain.on('stop', (event, pid) => {
+        
+    })
 })
 
 function mozTask(task, cwd) {
