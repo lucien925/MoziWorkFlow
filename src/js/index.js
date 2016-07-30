@@ -10,7 +10,8 @@
 	// element query
 	const JAddFolder  = $('#J-add-folder'),
 		  JMoziList   = $('#J-mozi-list'),
-		  actions     = $$('.mozi-actions-item > a')
+		  actions     = $$('.mozi-actions-item > button'),
+		  mask        = $('.mask')
 
 	// html template
 	let projectTmpl   = $('#project-tmpl')
@@ -79,7 +80,6 @@
 					  	package: false
 					  }
 				}
-			
 			workspace.push(_o)
 			localStorage.setItem('workspace', JSON.stringify(workspace))
 			generateProjectItem([_o])
@@ -181,34 +181,53 @@
 				let _actions = _contextInWorkspace.actions,
 					_key = ''
 
-				for(_key in _action) {
+				for(_key in _actions) {
 					if(_key === _action)
 						break
-					if(_action[_key]) {
+					if(_actions[_key]) {
 						dialog.showErrorBox('Error:', '当前项目的已有正在进行中的任务')
 						return false
 					}
 				}
 				
 			}
-			_contextInWorkspace[_action] = true
-			ipcRenderer.send('action', _action, _context)
+			let _target = findItemByPath(_context)
+			if(_action === 'init') {
+				mask.classList.add('show')
+				$('[data-target="confirm"]').onclick = () => {
+					let __projectName = $('.prompt-input').value
+					if(__projectName.trim()) {
+						mask.classList.remove('show')
+						$('.prompt-input').value = ''
+						$('.mozi-list-progress', _target).classList.add('progress')
+						ipcRenderer.send('action', _action, _context , __projectName)
+					} else {
+						dialog.showErrorBox('Error:', '项目名不能为空')
+					}
+				}
+				$('[data-target="cancel"]').onclick = () => {
+					mask.classList.remove('show')
+					$('.prompt-input').value = ''
+				}
+			} else {
+				$('.mozi-list-progress', _target).classList.add('progress')
+				_contextInWorkspace.actions[_action] = true
+				ipcRenderer.send('action', _action, _context /*, _projectName*/)
+			}
 		}
 	})
 
 
 	ipcRenderer.on('end', (event, action, context) => {
 		let _contextInWorkspace = contextInWorkspace(context),
-			_actions = _contextInWorkspace.actions
+			_actions = _contextInWorkspace.actions,
+			_target = findItemByPath(context)
+		$('.mozi-list-progress', _target).classList.remove('progress')
 		_actions[action] = false
-
-		$('.mask').style.display = 'block'
-		$('.mask > .success').style.display = 'block'
 	})
 
 	ipcRenderer.on('error', () => {
-		$('.mask').style.display = 'block'
-		$('.mask > .error').style.display = 'block'
+		
 	})
 	// util functions
 	function $(selector , ctx) {
@@ -257,6 +276,18 @@
 		while(++_index < _len) {
 			if(workspace[_index]['path'] === ctx) {
 				return workspace[_index]
+			}
+		}
+	}
+
+	function findItemByPath(path) {
+		let _lists = $$('.mozi-list-item'),
+			_len = _lists.length,
+			_index = -1
+		while(++_index < _len) {
+			let __path = _lists[_index].dataset.targetProject
+			if(__path === path) {
+				return _lists[_index]
 			}
 		}
 	}

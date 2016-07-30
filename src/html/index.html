@@ -5,6 +5,7 @@
         <title>MoziWorkFlow</title>
         <link rel="stylesheet" href="../css/common.css" charset="utf-8">
         <link rel="stylesheet" href="../css/index.css" charset="utf-8">
+        <link rel="stylesheet" href="../css/popup.css">
     </head>
     <body>
         <div class="container">
@@ -16,46 +17,66 @@
                     <span id="J-add-folder" class="mozi-header-plus">+</span>
                 </div>
                 <ul class="mozi-actions">
-                    <li class="mozi-actions-item init"><a data-action="init" href="javascript:void(0);">init</a></li>
-                    <li class="mozi-actions-item serve"><a data-action="serve" href="javascript:void(0);">serve</a></li>
-                    <li class="mozi-actions-item build"><a data-action="build" href="javascript:void(0);">build</a></li>
-                    <li class="mozi-actions-item deploy" ><a data-action="deploy" href="javascript:void(0);">deploy</a></li>
-                    <li class="mozi-actions-item pack"><a data-action="pack" href="javascript:void(0);">package</a></li>
+                    <li class="mozi-actions-item init"><button data-action="init">init</button></li>
+                    <li class="mozi-actions-item serve"><button data-action="serve">serve</button></li>
+                    <li class="mozi-actions-item build"><button data-action="build">build</button></li>
+                    <li class="mozi-actions-item deploy" ><button data-action="deploy"
+                    disabled="disabled">deploy</button></li>
+                    <li class="mozi-actions-item pack"><button data-action="pack">package</button></li>
                 </ul>
             </div>
         </div>
         <div class="mask">
-            <div class="popup loading">loading</div>
+            <!-- <div class="popup loading">
+                <svg class="circular">
+                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
+                </svg>
+            </div>
             <div class="popup error">error</div>
-            <div class="popup success">success</div>
+            <div class="popup success">success</div> -->
+            <div class="popup prompt">
+                <div class="prompt-body">
+                    <label class="prompt-label">请输入您的项目名:</label>
+                    <input class="prompt-input" type="text" name="projectName">
+                </div>
+                <div class="prompt-footer">
+                    <a href="javascript:void(0)" data-target="confirm">确定</a>
+                    <a href="javascript:void(0)" data-target="cancel">取消</a>
+                </div>
+            </div>
         </div>
         <script id="project-tmpl" type="text/tmpl">
             <li data-target-project="{projectPath}" class="mozi-list-item">
-                <div class="project-desc">
-                    <div class="project-desc-name">{projectName}</div>
-                    <div class="project-desc-path">{projectPath}</div>
-                </div>
-                <div class="project-avatar">
-                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                         viewBox="0 0 58 58" style="width:.3rem;height:" xml:space="preserve" >
-                        <path style="fill:#EFCE4A;" d="M46.324,52.5H1.565c-1.03,0-1.779-0.978-1.51-1.973l10.166-27.871
-                            c0.184-0.682,0.803-1.156,1.51-1.156H56.49c1.03,0,1.51,0.984,1.51,1.973L47.834,51.344C47.65,52.026,47.031,52.5,46.324,52.5z"/>
-                        <g>
-                            <path style="fill:#EBBA16;" d="M50.268,12.5H25l-5-7H1.732C0.776,5.5,0,6.275,0,7.232V49.96c0.069,0.002,0.138,0.006,0.205,0.01
-                                l10.015-27.314c0.184-0.683,0.803-1.156,1.51-1.156H52v-7.268C52,13.275,51.224,12.5,50.268,12.5z"/>
-                        </g>
-                    </svg>
-                </div>                          
-                <div class="project-actions">
-                    <span class="project-actions-icon"></span>
-                    <div class="project-actions-wrap">
-                      <ul class="project-actions-list">
-                          <li class="project-actions-item init"><a data-action="remove" href="javascript:void(0)">remove</a></li>
-                          <li class="project-actions-item serve"><a data-action="del" href="javascript:void(0)">delete</a></li>
-                          <li class="project-actions-item build"><a data-action="info" href="javascript:void(0)">infomation</a></li>
-                      </ul>
-                        
+                <div class="mozi-list-content">
+                    <div class="project-desc">
+                        <div class="project-desc-name">{projectName}</div>
+                        <div class="project-desc-path">{projectPath}</div>
                     </div>
+                    <div class="project-avatar">
+                        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                             viewBox="0 0 58 58" style="width:.3rem;height:" xml:space="preserve" >
+                            <path style="fill:#EFCE4A;" d="M46.324,52.5H1.565c-1.03,0-1.779-0.978-1.51-1.973l10.166-27.871
+                                c0.184-0.682,0.803-1.156,1.51-1.156H56.49c1.03,0,1.51,0.984,1.51,1.973L47.834,51.344C47.65,52.026,47.031,52.5,46.324,52.5z"/>
+                            <g>
+                                <path style="fill:#EBBA16;" d="M50.268,12.5H25l-5-7H1.732C0.776,5.5,0,6.275,0,7.232V49.96c0.069,0.002,0.138,0.006,0.205,0.01
+                                    l10.015-27.314c0.184-0.683,0.803-1.156,1.51-1.156H52v-7.268C52,13.275,51.224,12.5,50.268,12.5z"/>
+                            </g>
+                        </svg>
+                    </div>                          
+                    <div class="project-actions">
+                        <span class="project-actions-icon"></span>
+                        <div class="project-actions-wrap">
+                          <ul class="project-actions-list">
+                              <li class="project-actions-item init"><a data-action="remove" href="javascript:void(0)">remove</a></li>
+                              <li class="project-actions-item serve"><a data-action="del" href="javascript:void(0)">delete</a></li>
+                              <li class="project-actions-item build"><a data-action="info" href="javascript:void(0)">infomation</a></li>
+                          </ul>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="mozi-list-progress">
+                    
                 </div>
             </li>
         </script>

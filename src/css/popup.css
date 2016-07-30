@@ -1,0 +1,89 @@
+@charset 'utf-8';
+.mask {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background: rgba(0, 0, 0, 0.1);
+}
+.mask .popup {
+	position: absolute;
+	font-size: .14rem;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background-color: #FFFFFF;
+}
+
+.popup.loading .circular{
+	width: 1rem;
+	height: 1rem;
+	animation: rotate 2s linear infinite;
+	transform-origin: center center;
+}
+
+
+.popup.loading .path {
+	stroke-dasharray: 1200;
+	stroke-dashoffset: 0;
+	animation: dash 1.5s ease-in-out infinite;
+	stroke: #4285F4;
+}
+
+.popup.error,
+.popup.success {
+	width: 1rem;
+	height: 1rem
+} 
+
+.popup.prompt {
+	width: 2.5rem;
+	height: 1.1rem;
+	padding: .1rem .3rem;
+	color: #000;
+}
+.popup.prompt .prompt-label {
+	display: block;
+	font-size: .14rem;
+	padding: .08rem 0;
+}
+.popup.prompt .prompt-input {
+	height: .25rem;
+	width: 2rem;
+	border: none;
+	font-size: .14rem;
+	border-bottom: 1px solid #ccc;
+	background: none;
+	outline: none;
+}
+.popup.prompt .prompt-footer {
+	display: flex;
+	margin-top: .1rem;
+	flex-direction: row-reverse;
+}
+.popup.prompt .prompt-footer > a {
+	display: inline-block;
+	margin: 0rem .05rem;
+	color: #4285F4;
+}
+@keyframes rotate {
+	100% {
+		transform: rotate(360deg)
+	}
+}
+@keyframes dash{
+	0% {
+		stroke-dasharray: 1,200;
+		stroke-dashoffset: 0;
+	}
+	50% {
+		stroke-dasharray: 89,200;
+		stroke-dashoffset: -35;
+	}
+	100% {
+		stroke-dasharray: 89,200;
+		stroke-dashoffset: -124;
+	}
+}

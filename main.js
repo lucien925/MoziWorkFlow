@@ -5,16 +5,15 @@ const cp = require('child_process')
 const path = require('path')
 const os = require('os')
 const fs = require('fs')
-const { app, BrowserWindow, ipcMain } = Electron
-
+const { app, BrowserWindow, ipcMain, dialog } = Electron
 let win = null
 
 let defaultCwd = '/Users/lucienyu/Workspace/test'
 process.stdout.setEncoding('UTF-8')
-process.stdout.on('data', (chunk) => {
-    if(!chunk) return
-    dealLog(chunk)
-})
+// process.stdout.on('data', (chunk) => {
+//     if(!chunk) return
+//     dealLog(chunk)
+// })
 function createWindow() {
     console.log('app start')
     win = new BrowserWindow({
@@ -97,13 +96,9 @@ app.on('ready', () => {
     //appDeploy()   // app deploy
     //appBuild()    // app build
     //appServe()    // app serve
-
+    const child = null
     ipcMain.on('action', (event, action, context) => {
-        if(action === 'init') {
-            // input project name
-        }
-        console.log(action, context)
-        const child = cp.exec(`moz ${action}`, {
+        child = cp.exec(`${__dirname}/node_modules/moz/bin/moz ${action} -p project-name`, {
             cwd: context
         })
 
@@ -123,12 +118,12 @@ app.on('ready', () => {
             // show the end of the displayed message
             event.sender.send('end', action, context)
             // kill child process
-            process.kill(child.pid) 
+            // process.kill(child.pid) 
         })
     })
 
-    ipcMain.on('stop', (event, pid) => {
-
+    ipcMain.on('stop', (event) => {
+        process.kill(child.pid)
     })
 })
 
@@ -158,4 +153,8 @@ app.on('activate', () => {
     if(win === null) {
         createWindow()
     }
+})
+
+process.stdout.on('data', (data) => {
+    console.log(data)
 })

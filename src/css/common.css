@@ -47,3 +47,9 @@ a {
 .clearfix {
 	overflow: hidden;
 }
+.show {
+	display: block!important;
+}
+.hide {
+	display: none;
+}
