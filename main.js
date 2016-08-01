@@ -8,12 +8,6 @@ const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = Electron
 let win = null
 
-let defaultCwd = '/Users/lucienyu/Workspace/test'
-process.stdout.setEncoding('UTF-8')
-// process.stdout.on('data', (chunk) => {
-//     if(!chunk) return
-//     dealLog(chunk)
-// })
 function createWindow() {
     console.log('app start')
     win = new BrowserWindow({
@@ -96,34 +90,39 @@ app.on('ready', () => {
     //appDeploy()   // app deploy
     //appBuild()    // app build
     //appServe()    // app serve
-    const child = null
-    ipcMain.on('action', (event, action, context) => {
-        child = cp.exec(`${__dirname}/node_modules/moz/bin/moz ${action} -p project-name`, {
-            cwd: context
-        })
-
-
+    process.stdout.setEncoding('UTF-8')
+    ipcMain.on('action', (event, action, context, projectName) => {
+        let child = null
+        if(action === 'init') {
+            child = cp.exec(`${__dirname}/node_modules/moz/bin/moz ${action} -p ${projectName}`, {
+                cwd: context
+            })
+        } else {
+            child = cp.exec(`${__dirname}/node_modules/moz/bin/moz ${action}`, {
+                cwd: context
+            })
+        }
+        event.sender.send('pid', child.pid)
         child.stderr.on('data', (err) => {
             let _err = err.toString()
             // handle the error
-            event.sender.send('error', err)
-            console.log(_err)
+            event.sender.send('error', err, child.pid)
         })
 
-        child.stdout.on('data', (data) => {
-            console.log(data.toString())
+        child.stdout.on('data', (log) => {
+            let _log = log.toString()
+            console.log(_log)
         })
 
         child.stdout.on('finish', () => {
             // show the end of the displayed message
-            event.sender.send('end', action, context)
+            event.sender.send('end', action, context, child.pid)
             // kill child process
-            // process.kill(child.pid) 
         })
     })
 
-    ipcMain.on('stop', (event) => {
-        process.kill(child.pid)
+    ipcMain.on('stop', (event, pid) => {
+        process.kill(pid)
     })
 })
 
@@ -140,7 +139,7 @@ function mozTask(task, cwd) {
     require('moz/bin/moz')
 }
 
-function dealLog(s) {
+function showLog(s) {
 
 }
 app.on('window-all-closed', () => {

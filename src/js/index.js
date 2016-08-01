@@ -10,8 +10,8 @@
 	// element query
 	const JAddFolder  = $('#J-add-folder'),
 		  JMoziList   = $('#J-mozi-list'),
-		  actions     = $$('.mozi-actions-item > button'),
-		  mask        = $('.mask')
+		  mask        = $('.mask'),
+		  actions     = $$('.mozi-actions-item > button')
 
 	// html template
 	let projectTmpl   = $('#project-tmpl')
@@ -27,8 +27,19 @@
 			workspace = []
 		} else {
 			workspace = JSON.parse(workspace)
-			context = workspace[0].path
+			context = localStorage.getItem('context')
 			generateProjectItem(workspace)
+
+			let projectItems = $$('.mozi-list-item', JMoziList),
+				len = projectItems.length,
+				index = -1,
+				current = null
+			while(++index < len) {
+				current = projectItems[index]
+				if(current.dataset.targetProject === context) {
+					current.classList.add('current')
+				}
+			}
 		}
 	})()
 
@@ -54,47 +65,58 @@
 	JAddFolder.onclick = () => {
 		dialog.showOpenDialog({
 			properties: ['openDirectory']
-		}, (opts) => {
-			if(!opts) return
-			context = opts[0]
-			let len = workspace.length,
+		}, (dir) => {
+			if(!dir) return
+			let directory = dir[0],
+				len = workspace.length,
 				index = -1
 			while(++index < len) {
-				if(context === workspace[index].path) {
+				if(directory === workspace[index].path) {
 
-					// show dialog to user for the project already exists
+					// show error dialog to user for project already exists
 					dialog.showErrorBox('Error:', '当前工作区已经存在该目录!')
 					return; 
 				}
 			}
-			let _context = context,
-				_a = _context.split(path.sep),
+			let _project = directory,
+				_a = _project.split(path.sep),
 			    _o = {
 					  name: _a[_a.length - 1],
-					  path: _context,
+					  path: _project,
 					  actions: {
 					  	init: false,
 					  	serve: false,
 					  	build: false,
 					  	deploy: false,
-					  	package: false
+					  	pack: false
+					  },
+					  info: {
+					  	inirPid: 0,
+					  	servePid: 0,
+					  	buildPid: 0,
+					  	deployPid: 0,
+					  	packagePid: 0
 					  }
 				}
+			generateProjectItem([_o])
+			if(workspace.length === 0) {   
+				context = _o.path
+				$('.mozi-list').firstChild.classList.add('current')
+			}
 			workspace.push(_o)
 			localStorage.setItem('workspace', JSON.stringify(workspace))
-			generateProjectItem([_o])
 		})
 	}
 	JMoziList.onclick = (e) => {
 		e.preventDefault()
 		e.stopPropagation()
-		let _this = JMoziList,
-			_target = e.target,
+		let _target = e.target,
 			_action = _target.dataset.action,
 			_targetParent = walker(_target),
-			_path = ''
+			_path = '', _contextInWorkspace = null
 		if(!_targetParent) return
 		_path = _targetParent.dataset.targetProject
+		_contextInWorkspace = contextInWorkspace(_path)
 		if(_action) {
 			switch(_action) {
 				case 'remove':
@@ -134,34 +156,80 @@
 						__workspaceStringify = JSON.stringify(workspace)
 						localStorage.setItem('workspace', __workspaceStringify)
 					} else {
-						localStorage.removeItem('workspace')
 						context = ''
+						localStorage.removeItem('workspace')
+						localStorage.removeItem('context')
 					}
-		
+				case 'open':
+					// open directory with finder
 				case 'info':
 				default:
 					break;
 			}
 			return
 		} else {
-			$$('.mozi-list-item', _this).forEach((item, index) => {
+			if(_targetParent.classList.contains('current')) return
+
+			$$('.mozi-list-item', JMoziList).forEach((item, index) => {
 				item.classList.remove('current')
 			})
-
 			_targetParent.classList.add('current')
 			context = _path
+			localStorage.setItem('context', context)
+			// let _key = '',
+			// 	_actions = _contextInWorkspace['actions'],
+			// 	_actionButton = null
+			// for(_key in _actions) {
+			// 	_actionButton = findActionButton(_key)
+			// 	if(_actions[_key]) {
+			// 		if(!_actionButton.classList.contains('on')) {
+			// 			_actionButton.classList.add('on')
+			// 		} 
+			// 	} else {
+			// 		_actionButton.classList.remove('on')
+			// 	}
+			// }
+
+			// function findActionButton(action) {
+			// 	let len = actions.length,
+			// 		index = -1
+			// 	while(++index < len) {
+			// 		if(actions[index].dataset.action === action) {
+			// 			return actions[index]
+			// 		}
+			// 	}
+			// }
+			let	__actions = _contextInWorkspace.actions,
+				__key, __button 
+
+			for(__key in __actions) {
+				__button = $('[data-action="'+ __key +'"]')
+				if(__actions[__key]) {
+					__button.classList.add('progress')
+				} else {
+					if(__button.classList.contains('progress')) {
+						__button.classList.remove('progress')
+					}
+				}
+			}
+
 		}
 	}
 
 	actions.forEach((action, index) => {
 		action.onclick = function() {
-
 			let _this = this,
 				_context = context,
 				_action = this.dataset.action,
 				_contextInWorkspace = contextInWorkspace(_context)
 			if(!_contextInWorkspace) return
 			// judge the action can be deal with
+			
+			// stop 
+			if(_contextInWorkspace.actions[_action]) {
+				ipcRenderer.send('stop', _contextInWorkspace.info[_action + 'Pid'])
+				return
+			}
 			let _configFilePath = path.join(_context, 'moz.config.js'),
 				_isExistsConfigFile = fs.existsSync(_configFilePath)
 			if(_action === 'init') {
@@ -196,11 +264,12 @@
 				mask.classList.add('show')
 				$('[data-target="confirm"]').onclick = () => {
 					let __projectName = $('.prompt-input').value
-					if(__projectName.trim()) {
+					if(__projectName.trim()) {  // BUG 
 						mask.classList.remove('show')
 						$('.prompt-input').value = ''
 						$('.mozi-list-progress', _target).classList.add('progress')
 						ipcRenderer.send('action', _action, _context , __projectName)
+						_this.classList.add('progress')
 					} else {
 						dialog.showErrorBox('Error:', '项目名不能为空')
 					}
@@ -212,23 +281,36 @@
 			} else {
 				$('.mozi-list-progress', _target).classList.add('progress')
 				_contextInWorkspace.actions[_action] = true
-				ipcRenderer.send('action', _action, _context /*, _projectName*/)
+				ipcRenderer.send('action', _action, _context)
+				ipcRenderer.once('pid', (event, pid) => {
+					_contextInWorkspace.info[_action + 'Pid'] = pid
+				})
+				_this.classList.add('progress')
+
 			}
 		}
 	})
 
-
-	ipcRenderer.on('end', (event, action, context) => {
+	// moz task finished
+	ipcRenderer.on('end', (event, action, context, pid) => {
 		let _contextInWorkspace = contextInWorkspace(context),
 			_actions = _contextInWorkspace.actions,
 			_target = findItemByPath(context)
 		$('.mozi-list-progress', _target).classList.remove('progress')
 		_actions[action] = false
+		try {
+			process.kill(pid)
+		} catch(err) {
+
+		}
 	})
 
-	ipcRenderer.on('error', () => {
-		
+
+	ipcRenderer.on('error', (event, err, pid) => {
+		dialog.showErrorBox('Error:', err)
+		//process.kill(pid)
 	})
+
 	// util functions
 	function $(selector , ctx) {
 		if(!ctx) ctx = document
@@ -268,13 +350,13 @@
 			})
 		}
 	}
-
-	function contextInWorkspace(ctx) {
-		if(!ctx) return false
+					
+	function contextInWorkspace(path) {
+		if(!path) return false
 		let _len = workspace.length,
 			_index = -1
 		while(++_index < _len) {
-			if(workspace[_index]['path'] === ctx) {
+			if(workspace[_index]['path'] === path) {
 				return workspace[_index]
 			}
 		}
