@@ -4,17 +4,53 @@
 	display: flex;
 	align-items: stretch;
 }
-.container .mozi {
+.container .mozi-workspace {
 	flex: 2;
 	display: flex;
 	flex-direction: column;
 }
-.container .main {
-	flex: 5;
+.container .mozi-console {
+	flex: 3;
 	display: flex;
 	flex-direction: column;
 }
-.mozi .mozi-header {
+.container .mozi-console {
+	border: 1px solid #F7F7F7;
+}
+.container .mozi-console .console-header {
+	display: flex;
+	justify-content: space-between; 
+	height: .3rem;
+	padding: 0 .15rem;
+	line-height: .3rem;
+	font-size: .14rem;
+	background: #EAEAEA;
+	border-bottom: 1px solid #d8d8d8;
+}
+.container .mozi-console .console-header > span {
+	display: inline-block;
+	height: .3rem;
+	padding: 0 .05rem;
+	border-bottom: 2px solid #4078c0;
+	margin-bottom: -1px;
+}
+.container .mozi-console .console-header > a {
+	color: #000;
+}
+.container .mozi-console .console-header > a:hover {
+	text-decoration: underline;
+}
+.container .mozi-console .mozi-console-container {
+	padding: .1rem;
+	height: auto;
+	overflow: scroll;
+}
+.container .mozi-console p {
+	font-size: .12rem;
+	line-height: 1.4;
+	color: #2f2e2e;
+}
+.mozi-workspace .mozi-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -24,13 +60,13 @@
 	background: #3F51B5;
 	order: -1;
 }
-.mozi .mozi-header .mozi-header-title {
+.mozi-workspace .mozi-header .mozi-header-title {
 	padding-left: .2rem;
 	color: #FFFFFF;
 	font-size: .16rem;
 	font-weight: normal;
 }
-.mozi .mozi-header .mozi-header-plus {
+.mozi-workspace .mozi-header .mozi-header-plus {
 	width: .4rem;
 	height: .4rem;
 	line-height: .4rem;
@@ -43,10 +79,10 @@
 	cursor: pointer;
 	transition: background-color .3s ease;
 }
-.mozi .mozi-header .mozi-header-plus:hover {
+.mozi-workspace .mozi-header .mozi-header-plus:hover {
 	background-color: #F50057;
 }
-.mozi .mozi-list {
+.mozi-workspace .mozi-list {
 	flex: 1;
 	background: #FFFFFF;
 }
@@ -61,7 +97,7 @@
 	display: flex;
 	align-items: center;
 	height: .7rem;
-	padding: .1rem 0 .05rem .2rem;
+	padding: .1rem 0 .05rem .15rem;
 	margin-top: .2rem; 
 	font-size: .16rem;
 	cursor: pointer;
@@ -97,6 +133,7 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	max-width: 2.4rem;
 }
 .project-actions {
 	position: relative;
@@ -111,13 +148,19 @@
 	color: #FFFFFF;
 	cursor: pointer;
 }
+.project-actions .project-actions-icon > svg {
+	width: .12rem;
+	height: .12rem;
+	margin-top: .04rem;
+	margin-left: .04rem;
+	fill: #FFFFFF;
+}
 .project-actions .project-actions-wrap {
 	display: none;
 	position: absolute;
 	width: .8rem;
 	top: -.1rem;
 	right: 0;
-	padding: .05rem;
 	border-radius: 2px;
 	background: #FFFFFF;
 	z-index: 10;
@@ -139,14 +182,14 @@
 .project-actions .project-actions-list .project-actions-item > a:hover {
 	background: #D2D2D2;
 }
-.mozi .mozi-actions {
+.mozi-workspace .mozi-actions {
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
 	height: .6rem;
 	font-size: .16rem;
 }
-.mozi .mozi-actions .mozi-actions-item > button {
+.mozi-workspace .mozi-actions .mozi-actions-item > button {
 	display: block;
 	width: .6rem;
 	height: .3rem;
@@ -160,11 +203,11 @@
 	cursor: pointer;
 	outline: none;
 }
-.mozi .mozi-actions .mozi-actions-item > button[disabled] {
+.mozi-workspace .mozi-actions .mozi-actions-item > button[disabled] {
 	cursor: not-allowed;
 	background: #ccc;
 }
-.mozi .mozi-actions .mozi-actions-item > button:hover:not([disabled]) {
+.mozi-workspace .mozi-actions .mozi-actions-item > button:hover:not([disabled]) {
 	background-color: #303F9F;
 }
 /* progress style */

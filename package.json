@@ -1,10 +1,11 @@
 {
-  "name": "mozi-client",
+  "name": "MoziWorkFlow",
   "version": "1.0.0",
-  "description": "the client for Mozi",
+  "description": "the pc client for Mozi",
   "main": "main.js",
   "scripts": {
-    "test": "electron main.js"
+    "test": "electron main.js",
+    "build": "electron-packager ./ --overwrite --platform=darwin --arch=x64 --out=./dist"
   },
   "repository": {
     "type": "git",
@@ -12,7 +13,8 @@
   },
   "keywords": [
     "Electron",
-    "mozi"
+    "mozi",
+    "workflow"
   ],
   "author": "lucienyu",
   "license": "ISC",
@@ -22,6 +24,12 @@
   "homepage": "https://github.com/summerGreenTea/MoziWorkFlow#readme",
   "devDependencies": {
     "electron": "^0.4.1",
+    "electron-packager": "^7.4.0",
+    "moz": "0.0.8"
+  },
+  "dependencies": {
+    "electron": "^0.4.1",
+    "electron-packager": "^7.4.0",
     "moz": "0.0.8"
   }
 }

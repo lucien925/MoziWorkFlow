@@ -6,91 +6,30 @@ const path = require('path')
 const os = require('os')
 const fs = require('fs')
 const { app, BrowserWindow, ipcMain, dialog } = Electron
-let win = null
+let win = null,
+    logIpc = null
 
 function createWindow() {
-    console.log('app start')
     win = new BrowserWindow({
         width: 800,
         height: 700
     })
 
     win.loadURL(`file://${__dirname}/src/html/index.html`)
-
     win.webContents.openDevTools()
-
     win.on('close', () => {
         win = null
     })
 }
 
-function appInit() {
-    ipcMain.on('init', (event, arg) => {
-        let _arg = arg
-        event.sender.send('init-replay', 'input-project-name')
-        ipcMain.on('init-project', (event, arg) => {
-            (() => {
-                // handle the peoject name `_arg`
-                mozTask('init', _arg)
-            })()
-            ipcMain.removeListener('init-project')
-        })
-    })
-}
-function appServe() {
-    ipcMain.on('serve', (event, arg) => {
-        mozTask('serve', arg)
-    })
-}
-
-function appBuild() {
-    ipcMain.on('build', (event, arg) => {
-        //mozTask('build', arg)
-        let _cwd = arg
-        const childForBuild = cp.exec('moz build', {
-            cwd: _cwd
-        })
-
-        childForBuild.stderr.on('data', (err) => {
-            let _errToString = data.toString()
-            console.error(_errToString)
-        })
-
-        childForBuild.stdout.on('data', (data) => {
-            console.log(data.toString())
-        })
-        childForBuild.stdout.on('finish', () => {
-            // show the end of the displayed message
-            // kill child process
-
-        })
-
-    })
-}
-
-function appDeploy() {
-    ipcMain.on('deploy', (event, arg) => {
-        mozTask('deploy', arg)
-    })
-}
-
-function appPackage() {
-    ipcMain.on('pack', (event, arg) => {
-        //mozTask('pack', arg)
-        const childForPack = cp.exec('moz pack', {
-            cwd
-        })
-    })
-}
-
 app.on('ready', () => {
+    // 初始化ipc打印控制台进程
+    ipcMain.on('log-init', (event) => {
+        logIpc = event
+    })
+    // 创建窗口
     createWindow()
-    //appInit()     // app init
-    //appPackage()  // app package
-    //appDeploy()   // app deploy
-    //appBuild()    // app build
-    //appServe()    // app serve
-    process.stdout.setEncoding('UTF-8')
+    // 监听ipcRenderer发送过来的事件
     ipcMain.on('action', (event, action, context, projectName) => {
         let child = null
         if(action === 'init') {
@@ -103,6 +42,7 @@ app.on('ready', () => {
             })
         }
         event.sender.send('pid', child.pid)
+        child.stdout.setEncoding('UTF-8')
         child.stderr.on('data', (err) => {
             let _err = err.toString()
             // handle the error
@@ -110,8 +50,8 @@ app.on('ready', () => {
         })
 
         child.stdout.on('data', (log) => {
-            let _log = log.toString()
-            console.log(_log)
+            logIpc.sender.send('log', log)
+            
         })
 
         child.stdout.on('finish', () => {
@@ -122,10 +62,15 @@ app.on('ready', () => {
     })
 
     ipcMain.on('stop', (event, pid) => {
-        process.kill(pid)
+        try {
+            process.kill(pid)
+        } catch(err) {
+            
+        }
     })
 })
 
+// 不创建子进程的方式去执行moz的任务
 function mozTask(task, cwd) {
     if(cwd) {
         try {   
@@ -139,9 +84,6 @@ function mozTask(task, cwd) {
     require('moz/bin/moz')
 }
 
-function showLog(s) {
-
-}
 app.on('window-all-closed', () => {
     if(process.platform !== 'darwin') {
         app.quit()
@@ -152,8 +94,4 @@ app.on('activate', () => {
     if(win === null) {
         createWindow()
     }
-})
-
-process.stdout.on('data', (data) => {
-    console.log(data)
 })

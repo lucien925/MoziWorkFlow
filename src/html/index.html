@@ -9,7 +9,7 @@
     </head>
     <body>
         <div class="container">
-            <div class="mozi">
+            <div class="mozi-workspace">
                 <ul id="J-mozi-list" class="mozi-list">
                 </ul>
                 <div class="mozi-header">
@@ -25,15 +25,15 @@
                     <li class="mozi-actions-item pack"><button data-action="pack">package</button></li>
                 </ul>
             </div>
+            <div class="mozi-console">
+                <div class="console-header">
+                    <span>Console</span>
+                    <a href="javascript:void(0);">Clear</a>
+                </div>
+                <div class="mozi-console-container"></div>
+            </div>
         </div>
         <div class="mask">
-            <!-- <div class="popup loading">
-                <svg class="circular">
-                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"/>
-                </svg>
-            </div>
-            <div class="popup error">error</div>
-            <div class="popup success">success</div> -->
             <div class="popup prompt">
                 <div class="prompt-body">
                     <label class="prompt-label">请输入您的项目名:</label>
@@ -64,9 +64,14 @@
                         </svg>
                     </div>                          
                     <div class="project-actions">
-                        <span class="project-actions-icon"></span>
+                        <span class="project-actions-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" viewBox="0 0 43 34">
+                                <path d="M21.508,33.016 C21.006,33.016 20.538,32.765 20.260,32.348 C20.260,32.348 0.260,2.348 0.260,2.348 C-0.200,1.658 -0.014,0.728 0.676,0.268 C1.365,-0.194 2.296,-0.006 2.756,0.684 C2.756,0.684 21.508,28.812 21.508,28.812 C21.508,28.812 40.260,0.684 40.260,0.684 C40.719,-0.006 41.649,-0.194 42.340,0.268 C43.029,0.728 43.215,1.658 42.756,2.348 C42.756,2.348 22.756,32.348 22.756,32.348 C22.478,32.765 22.009,33.016 21.508,33.016 Z" id="path-1" class="cls-3" fill-rule="evenodd"/>
+                            </svg>
+                        </span>
                         <div class="project-actions-wrap">
                           <ul class="project-actions-list">
+                              <li class="project-actions-item serve"><a data-action="open" href="javascript:void(0)">open</a></li>
                               <li class="project-actions-item init"><a data-action="remove" href="javascript:void(0)">remove</a></li>
                               <li class="project-actions-item serve"><a data-action="del" href="javascript:void(0)">delete</a></li>
                               <li class="project-actions-item build"><a data-action="info" href="javascript:void(0)">infomation</a></li>

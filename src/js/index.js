@@ -4,23 +4,24 @@
 	const path = require('path')
 	const fs = require('fs')
 	const remote = electron.remote
-	const { ipcRenderer } = electron
+	const { ipcRenderer, shell } = electron
 	const { dialog } = remote
 
-	// element query
+	// 需要用到的DOM元素
 	const JAddFolder  = $('#J-add-folder'),
 		  JMoziList   = $('#J-mozi-list'),
 		  mask        = $('.mask'),
+		  logContainer = $('.mozi-console-container'),
 		  actions     = $$('.mozi-actions-item > button')
 
-	// html template
+	// html 模板
 	let projectTmpl   = $('#project-tmpl')
 
-	//global variables
+	//全局变量
 	let workspace = null,
 		context = ''
 
-	// init 
+	// 初始化
 	;(() => {
 		workspace = localStorage.getItem('workspace')
 		if(!workspace) { 
@@ -41,9 +42,10 @@
 				}
 			}
 		}
+		ipcRenderer.send('log-init')
 	})()
 
-	// transform html string to html dom structure
+	// 将数据转化成项目列表的DOM结构
 	function generateProjectItem(value) {
 		if(typeof value === 'object') {
 			let len = value.length,
@@ -61,7 +63,7 @@
 		}
 	}
 
-	// add project to container
+	// 在工作区中添加项目
 	JAddFolder.onclick = () => {
 		dialog.showOpenDialog({
 			properties: ['openDirectory']
@@ -72,8 +74,7 @@
 				index = -1
 			while(++index < len) {
 				if(directory === workspace[index].path) {
-
-					// show error dialog to user for project already exists
+					// 工作区已经处在这个目录
 					dialog.showErrorBox('Error:', '当前工作区已经存在该目录!')
 					return; 
 				}
@@ -107,6 +108,7 @@
 			localStorage.setItem('workspace', JSON.stringify(workspace))
 		})
 	}
+	// 点击项目列表的响应事件
 	JMoziList.onclick = (e) => {
 		e.preventDefault()
 		e.stopPropagation()
@@ -119,38 +121,47 @@
 		_contextInWorkspace = contextInWorkspace(_path)
 		if(_action) {
 			switch(_action) {
-				case 'remove':
-				case 'del':
+				case 'del':   // 删除当前的项目目录
+					let __buttons = ['Yes', 'No'],
+						__currentWin = remote.getCurrentWindow(),
+						__buttonIndex = dialog.showMessageBox(__currentWin, {
+										type: 'warning',
+										title: 'Warning:',
+										buttons: buttons,
+										message: '您确定要删除当前项目吗？删除之后无法撤销哦，请三思啊.'
+									})
+					if(__buttonIndex === 1) 
+						return
+					else {
+						shell.moveItemToTrash(_path)
+					}
+				case 'remove':  // 从工作区移除当前目录
+					
+					let __nextEle = _targetParent.nextElementSibling,
+						__firstEle = JMoziList.children[0]
+
+					if(_targetParent.classList.contains('current')) { 
+						// 若果当前要移除的目标节点是上下文节点的话
+						// 要转移上下文
+						if(JMoziList.children.length == 1) {
+							context = ''
+							localStorage.removeItem('context')
+						} else {
+							let ___targetEle = __nextEle || __firstEle
+							___targetEle.classList.add('current')
+							context = ___targetEle.dataset.targetProject
+							localStorage.setItem('context', context)
+						}	
+					}
 					let __workspaceStringify = null,
 						__len = workspace.length,
 						__index = -1
-					// if(_action === 'del') {
-					// 	let buttons = ['Yes', 'No'],
-					// 		currentWin = remote.getCurrentWindow(),
-					// 		buttonIndex = dialog.showMessageBox(currentWin, {
-					// 						type: 'warning',
-					// 						title: 'Warning:',
-					// 						buttons: buttons,
-					// 						message: '您确定要删除当前项目吗？删除之后无法撤销哦，请三思啊.'
-					// 					})
-					// 	if(buttonIndex === 1) 
-					// 		return
-					// 	else {
-					// 		fs.unlink(_path, (err) => {
-					// 			if(err) {
-					// 				// show delete error infomation
-					// 				console.log(err)
-					// 			}
-					// 		})
-					// 	}
-					// }
 					while(++__index < __len) {
 						if(workspace[__index]['path'] === _path) {
 							workspace.splice(__index, 1)
 							break
 						}
 					}
-					
 					JMoziList.removeChild(_targetParent)
 					if(workspace.length > 0) {
 						__workspaceStringify = JSON.stringify(workspace)
@@ -160,13 +171,15 @@
 						localStorage.removeItem('workspace')
 						localStorage.removeItem('context')
 					}
-				case 'open':
-					// open directory with finder
-				case 'info':
+					shell.beep()
+					break
+				case 'open':  // 在文件夹中显示当前目录
+					shell.showItemInFolder(_path)
+					break
+				case 'info':  // 查看当前目录信息
 				default:
-					break;
+					break
 			}
-			return
 		} else {
 			if(_targetParent.classList.contains('current')) return
 
@@ -215,7 +228,7 @@
 
 		}
 	}
-
+	// 给执行任务区域加响应事件
 	actions.forEach((action, index) => {
 		action.onclick = function() {
 			let _this = this,
@@ -238,14 +251,14 @@
 					return false
 				}
 			} else {
-				// if the `moz.config.js` file is not exists,
-				// show the error message
+				// 如果 `moz.config.js` 不存在的话，
+				// 显示这个错误信息
 				if(!_isExistsConfigFile) {
 					dialog.showErrorBox('Error:', '请先初始化当前目录')
 					return false
 				}
-				// if one of actions are processing，
-				// show the error message
+				// 如果其中的一个任务正在处理当中
+				// 显示这个错误信息
 				let _actions = _contextInWorkspace.actions,
 					_key = ''
 
@@ -290,8 +303,11 @@
 			}
 		}
 	})
+	$('.console-header > a').onclick = () => {
+		logContainer.innerHTML = ''
+	}
 
-	// moz task finished
+	// mozi的任务完成后的一系列动作
 	ipcRenderer.on('end', (event, action, context, pid) => {
 		let _contextInWorkspace = contextInWorkspace(context),
 			_actions = _contextInWorkspace.actions,
@@ -303,15 +319,23 @@
 		} catch(err) {
 
 		}
+		$('[data-action="'+ action +'"]').classList.remove('progress')
+
 	})
 
-
+	// ipc通信发生错误
 	ipcRenderer.on('error', (event, err, pid) => {
 		dialog.showErrorBox('Error:', err)
 		//process.kill(pid)
 	})
+	ipcRenderer.on('log', (event, log) => {
+		let p = document.createElement('p')
+		p.innerHTML = log 
+		logContainer.appendChild(p)
+		logContainer.scrollTop = logContainer.scrollHeight
+	})
 
-	// util functions
+	// 工具函数
 	function $(selector , ctx) {
 		if(!ctx) ctx = document
 		return ctx.querySelector(selector)
@@ -321,6 +345,10 @@
 		if(!ctx) ctx = document
 		return slice(ctx.querySelectorAll(selector))
 	}
+	function slice(eles) {
+		return Array.prototype.slice.call(eles);
+	}
+
 	function walker(ele) {
 		if(!ele.classList) {
 			return false
@@ -333,9 +361,6 @@
 		return walker(parent)
 	}
 
-	function slice(eles) {
-		return Array.prototype.slice.call(eles);
-	}
 
 	function deleteFolder(path) {
 		if(fs.existsSync(path)) {
