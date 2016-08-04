@@ -5,12 +5,12 @@
 	align-items: stretch;
 }
 .container .mozi-workspace {
-	flex: 2;
+	flex: 3;
 	display: flex;
 	flex-direction: column;
 }
 .container .mozi-console {
-	flex: 3;
+	flex: 4;
 	display: flex;
 	flex-direction: column;
 }

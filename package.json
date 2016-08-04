@@ -1,11 +1,13 @@
 {
   "name": "MoziWorkFlow",
+  "productName": "MoziWorkFlow",
   "version": "1.0.0",
-  "description": "the pc client for Mozi",
+  "description": "The client for Mozi",
   "main": "main.js",
   "scripts": {
-    "test": "electron main.js",
-    "build": "electron-packager ./ --overwrite --platform=darwin --arch=x64 --out=./dist"
+    "test": "electron .",
+    "build:mac": "electron-packager . MoziWorkFlow --platform=darwin --arch=x64 --version=1.3.2",
+    "build:win": "electron-packager . MoziWorkFlow --platform=win32 --arch=x64 --version=1.3.2"
   },
   "repository": {
     "type": "git",

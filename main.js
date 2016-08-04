@@ -9,18 +9,6 @@ const { app, BrowserWindow, ipcMain, dialog } = Electron
 let win = null,
     logIpc = null
 
-function createWindow() {
-    win = new BrowserWindow({
-        width: 800,
-        height: 700
-    })
-
-    win.loadURL(`file://${__dirname}/src/html/index.html`)
-    win.webContents.openDevTools()
-    win.on('close', () => {
-        win = null
-    })
-}
 
 app.on('ready', () => {
     // 初始化ipc打印控制台进程
@@ -43,9 +31,10 @@ app.on('ready', () => {
         }
         event.sender.send('pid', child.pid)
         child.stdout.setEncoding('UTF-8')
+        child.stderr.setEncoding('UTF-8')
         child.stderr.on('data', (err) => {
             let _err = err.toString()
-            // handle the error
+            // 处理错误
             event.sender.send('error', err, child.pid)
         })
 
@@ -70,6 +59,18 @@ app.on('ready', () => {
     })
 })
 
+function createWindow() {
+    win = new BrowserWindow({
+        width: 800,
+        height: 700
+    })
+
+    win.loadURL(`file://${__dirname}/src/html/index.html`)
+    // win.webContents.openDevTools()
+    win.on('close', () => {
+        win = null
+    })
+}
 // 不创建子进程的方式去执行moz的任务
 function mozTask(task, cwd) {
     if(cwd) {
